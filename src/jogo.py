@@ -5,6 +5,9 @@
 
 from configuracao import *
 from random import choice
+from temporizador import Temporizador
+
+
 
 class Jogo:
      def __init__(self):
@@ -26,6 +29,19 @@ class Jogo:
           # tetromino
           self.tetromino = Tetromino(choice(list(TETROMINOS.keys())), self.sprites)
           
+          # temporizador
+          self.temporizadores = {
+               'movimento vertical': Temporizador(VELOCIDADE_ATUALIZACAO_INICIAL, True, self.mover_pbaixo)
+          }
+          self.temporizadores['movimento vertical'].ativar()
+          
+     def atualizar_temporizador(self):
+          for temporizador in self.temporizadores.values():
+               temporizador.atualizar()
+     
+     def mover_pbaixo(self):
+          self.tetromino.mover_pbaixo()
+     
      def desenhar_grade(self):
           '''  Observe que o metodo pygame.draw.line possui argumentos para representar o inicio e fim de uma linha.
                Logo após o argumento "LINHA_COR" está a posição inicial, que precisa ser representado por uma tupla,
@@ -51,13 +67,17 @@ class Jogo:
           self.superficie.blit(self.superficie_linha, (0,0))
           
      def executar(self):
+          # atualizar
+          self.atualizar_temporizador()
+          self.sprites.update()
+          
           self.superficie.fill(CINZA)
           self.sprites.draw(self.superficie)
            
           self.desenhar_grade()
           # O método blit serve para colocarmos uma superficie em cima de outra superficie, nesse caso "superficie" -> "mostrar_superficie"
           self.mostrar_superficie.blit(self.superficie, (ESPACAMENTO, ESPACAMENTO))
-          pygame.draw.rect(self.mostrar_superficie, LINHA_COR, self.retangulo, 2, 2)     
+          pygame.draw.rect(self.mostrar_superficie, LINHA_COR, self.retangulo, 2, 2)    
 
 class Tetromino:
      def __init__(self, forma, grupo):
@@ -69,6 +89,11 @@ class Tetromino:
           # criando blocos
           self.blocos = [Bloco(grupo, posicao, self.cor) for posicao in self.posicoes_blocos]
 
+     def mover_pbaixo(self):
+          for bloco in self.blocos:
+               bloco.posicao.y += 1
+          
+          
 '''  Classe Bloco servira para gerarmos os blocos do tetris
      A herança com Sprite do pygame serve para conseguirmos mostrar uma superficie e posiciona-la de forma mais simples.'''
 class Bloco(pygame.sprite.Sprite):
@@ -84,8 +109,9 @@ class Bloco(pygame.sprite.Sprite):
           # posicao
           self.posicao = pygame.Vector2(posicao) + DESLOCAMENTO_BLOCO
           
-          x = self.posicao[0] * TAMANHO_CELULA
-          y = self.posicao[1] * TAMANHO_CELULA
-          self.rect = self.image.get_rect(topleft = (x, y))
-          
+          self.rect = self.image.get_rect(topleft = self.posicao * TAMANHO_CELULA)
+     
+     def update(self):
+          #self.rect = self.image.get_rect(topleft = self.posicao * TAMANHO_CELULA)
+          self.rect.topleft = self.posicao * TAMANHO_CELULA     
           
