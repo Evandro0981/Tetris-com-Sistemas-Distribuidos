@@ -31,7 +31,8 @@ class Jogo:
           
           # temporizador
           self.temporizadores = {
-               'movimento vertical': Temporizador(VELOCIDADE_ATUALIZACAO_INICIAL, True, self.mover_pbaixo)
+               'movimento vertical': Temporizador(VELOCIDADE_ATUALIZACAO_INICIAL, True, self.mover_pbaixo),
+               'movimento horizontal': Temporizador(TEMPO_ESPERA_MOVER) 
           }
           self.temporizadores['movimento vertical'].ativar()
           
@@ -68,6 +69,7 @@ class Jogo:
           
      def executar(self):
           # atualizar
+          self.input()
           self.atualizar_temporizador()
           self.sprites.update()
           
@@ -79,6 +81,21 @@ class Jogo:
           self.mostrar_superficie.blit(self.superficie, (ESPACAMENTO, ESPACAMENTO))
           pygame.draw.rect(self.mostrar_superficie, LINHA_COR, self.retangulo, 2, 2)    
 
+     def input(self):
+          '''
+               Move a peca referente a acao feita pelo jogador(esquerda, direita) 
+          '''
+          movimento = pygame.key.get_pressed()
+
+          if not self.temporizadores['movimento horizontal'].ativo:  
+               if movimento[pygame.K_LEFT]:
+                    self.tetromino.move_horizontal(-1)
+                    self.temporizadores['movimento horizontal'].ativar()
+               if movimento[pygame.K_RIGHT]:
+                    self.tetromino.move_horizontal(1)
+                    self.temporizadores['movimento horizontal'].ativar()
+                   
+
 class Tetromino:
      def __init__(self, forma, grupo):
           
@@ -88,6 +105,10 @@ class Tetromino:
 
           # criando blocos
           self.blocos = [Bloco(grupo, posicao, self.cor) for posicao in self.posicoes_blocos]
+
+     def move_horizontal(self, quantia):
+          for bloco in self.blocos:
+               bloco.posicao.x += quantia
 
      def mover_pbaixo(self):
           for bloco in self.blocos:
