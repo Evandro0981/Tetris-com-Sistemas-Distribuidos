@@ -106,13 +106,25 @@ class Tetromino:
           # criando blocos
           self.blocos = [Bloco(grupo, posicao, self.cor) for posicao in self.posicoes_blocos]
 
+     #Colisões
+     def proxima_colisao_horizontal(self, blocos, quantia):
+          lista_colisoes =[bloco.colisao_horizontal(int(bloco.posicao.x + quantia)) for bloco in self.blocos]
+          return True if any(lista_colisoes) else False
+
+     def proxima_colisao_vertical(self, blocos, quantia):
+          lista_colisoes =[bloco.colisao_vertical(int(bloco.posicao.y + quantia)) for bloco in self.blocos]
+          return True if any(lista_colisoes) else False
+
+
      def move_horizontal(self, quantia):
-          for bloco in self.blocos:
-               bloco.posicao.x += quantia
+          if not self.proxima_colisao_horizontal(self.blocos, quantia):
+               for bloco in self.blocos:
+                    bloco.posicao.x += quantia
 
      def mover_pbaixo(self):
-          for bloco in self.blocos:
-               bloco.posicao.y += 1
+          if not self.proxima_colisao_vertical(self.blocos, 1):
+               for bloco in self.blocos:
+                    bloco.posicao.y += 1
           
           
 '''  Classe Bloco servira para gerarmos os blocos do tetris
@@ -131,6 +143,18 @@ class Bloco(pygame.sprite.Sprite):
           self.posicao = pygame.Vector2(posicao) + DESLOCAMENTO_BLOCO
           
           self.rect = self.image.get_rect(topleft = self.posicao * TAMANHO_CELULA)
+
+     def colisao_horizontal(self, x):
+          '''
+               Não deixa que a peça caia para fora da matriz. '''
+          if not 0 <= x < COLUNAS:
+               return True
+          
+     def colisao_vertical(self, y):
+          '''
+               Não deixa que a peça caia para fora da matriz. '''
+          if y >= LINHAS:
+               return True
      
      def update(self):
           #self.rect = self.image.get_rect(topleft = self.posicao * TAMANHO_CELULA)
