@@ -27,7 +27,12 @@ class Jogo:
           self.superficie_linha.set_alpha(120)
           
           # tetromino
-          self.tetromino = Tetromino(choice(list(TETROMINOS.keys())), self.sprites)
+          self.dados_campo = [[0 for x in range(COLUNAS)] for y in range(LINHAS)]
+          self.tetromino = Tetromino(
+               choice(list(TETROMINOS.keys())),
+               self.sprites,
+               self.criar_novo_tetromino,
+               self.dados_campo)
           
           # temporizador
           self.temporizadores = {
@@ -35,7 +40,14 @@ class Jogo:
                'movimento horizontal': Temporizador(TEMPO_ESPERA_MOVER) 
           }
           self.temporizadores['movimento vertical'].ativar()
-          
+
+     def criar_novo_tetromino(self):
+          self.tetromino = Tetromino(
+               choice(list(TETROMINOS.keys())),
+               self.sprites,
+               self.criar_novo_tetromino,
+               self.dados_campo)
+     
      def atualizar_temporizador(self):
           for temporizador in self.temporizadores.values():
                temporizador.atualizar()
@@ -94,25 +106,27 @@ class Jogo:
                if movimento[pygame.K_RIGHT]:
                     self.tetromino.move_horizontal(1)
                     self.temporizadores['movimento horizontal'].ativar()
-                   
+
 
 class Tetromino:
-     def __init__(self, forma, grupo):
+     def __init__(self, forma, grupo, criar_novo_tetromino, dados_campo):
           
           # Base
           self.posicoes_blocos = TETROMINOS[forma]['forma']
           self.cor = TETROMINOS[forma]['cor']
+          self.criar_novo_tetromino = criar_novo_tetromino
+          self.dados_campo = dados_campo
 
           # criando blocos
           self.blocos = [Bloco(grupo, posicao, self.cor) for posicao in self.posicoes_blocos]
 
      #Colisões
      def proxima_colisao_horizontal(self, blocos, quantia):
-          lista_colisoes =[bloco.colisao_horizontal(int(bloco.posicao.x + quantia)) for bloco in self.blocos]
+          lista_colisoes =[bloco.colisao_horizontal(int(bloco.posicao.x + quantia), self.dados_campo) for bloco in self.blocos]
           return True if any(lista_colisoes) else False
 
      def proxima_colisao_vertical(self, blocos, quantia):
-          lista_colisoes =[bloco.colisao_vertical(int(bloco.posicao.y + quantia)) for bloco in self.blocos]
+          lista_colisoes =[bloco.colisao_vertical(int(bloco.posicao.y + quantia), self.dados_campo) for bloco in self.blocos]
           return True if any(lista_colisoes) else False
 
 
@@ -125,6 +139,13 @@ class Tetromino:
           if not self.proxima_colisao_vertical(self.blocos, 1):
                for bloco in self.blocos:
                     bloco.posicao.y += 1
+          else:
+               ''' Com este looping ele ira adicionar o Objeto Bloco na sua posição referente na matriz.
+                    A matriz é inicializada com 0, sempre que um bloco chegar ao chão a matriz é atualizada com o Objeto ocupando o espaço referente a peça na matriz. 
+               '''
+               for bloco in self.blocos:
+                    self.dados_campo[int(bloco.posicao.y)][int(bloco.posicao.x)] = bloco
+               self.criar_novo_tetromino()
           
           
 '''  Classe Bloco servira para gerarmos os blocos do tetris
@@ -144,16 +165,24 @@ class Bloco(pygame.sprite.Sprite):
           
           self.rect = self.image.get_rect(topleft = self.posicao * TAMANHO_CELULA)
 
-     def colisao_horizontal(self, x):
+     def colisao_horizontal(self, x, dados_campo):
           '''
                Não deixa que a peça caia para fora da matriz. '''
           if not 0 <= x < COLUNAS:
                return True
+
+          '''Verifica se irá ocorrer uma colisão.'''
+          if dados_campo[int(self.posicao.y)][x]:
+               return True
           
-     def colisao_vertical(self, y):
+     def colisao_vertical(self, y, dados_campo):
           '''
                Não deixa que a peça caia para fora da matriz. '''
           if y >= LINHAS:
+               return True
+          
+          '''Verifica se irá ocorrer uma colisão.'''
+          if y >= 0 and dados_campo[y][int(self.posicao.x)]:
                return True
      
      def update(self):
