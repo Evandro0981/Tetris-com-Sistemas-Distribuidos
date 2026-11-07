@@ -6,6 +6,8 @@ from jogo import Jogo
 from pontuacao import Pontuacao
 from previa import Previa
 
+from random import choice
+
 class Main:
      def __init__(self):
           pygame.init()
@@ -15,9 +17,12 @@ class Main:
           self.relogio = pygame.time.Clock()
           # Título da janela
           pygame.display.set_caption('Tetris')
+
+          #Pecas
+          self.proximas_pecas = [choice(list(TETROMINOS.keys())) for peca in range(3)]
           
           # componentes
-          self.jogo = Jogo() 
+          self.jogo = Jogo(self.get_proximas_pecas) 
           self.pontuacao = Pontuacao()
           self.previa = Previa()
           
@@ -35,7 +40,7 @@ class Main:
                # Componentes
                self.jogo.executar()
                self.pontuacao.executar()
-               self.previa.executar()
+               self.previa.executar(self.proximas_pecas)
                
                # Atualizando o jogo
                # Atualiza tudo que vemos dentro do jogo, assim podemos ver a janela do jogo
@@ -45,7 +50,12 @@ class Main:
                   Caso não haja argumentos, o jogo rodará com a quantidade máxima de quadros por segundo
                '''
                self.relogio.tick()
-               
+
+     def get_proximas_pecas(self):
+          proxima_peca = self.proximas_pecas.pop(0)
+          self.proximas_pecas.append(choice(list(TETROMINOS.keys())))
+          return proxima_peca
+
 if __name__ == '__main__':
      main = Main()
      main.executar()    

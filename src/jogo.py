@@ -10,7 +10,7 @@ from temporizador import Temporizador
 
 
 class Jogo:
-     def __init__(self):
+     def __init__(self, get_proxima_peca):
           # Define a superficie da aba do jogo
           self.superficie = pygame.Surface((LARGURA_JOGO, ALTURA_JOGO))
           # Esse metodo permite com que obtenhamos o exibir_superficie, ou melhor dizendo, o display da superfície que estamos usando
@@ -18,7 +18,9 @@ class Jogo:
           # Estamos definindo um retangulo aqui, para tracejar uma borda para todo o jogo.
           self.retangulo = self.superficie.get_rect(topleft = (ESPACAMENTO, ESPACAMENTO))
           self.sprites = pygame.sprite.Group()
-          
+
+          #Conexão com o jogo.
+          self.get_proxima_peca = get_proxima_peca
           
           # linhas
           self.superficie_linha = self.superficie.copy()
@@ -45,7 +47,7 @@ class Jogo:
      def criar_novo_tetromino(self):
           self.checa_linha_completa()
           self.tetromino = Tetromino(
-               choice(list(TETROMINOS.keys())),
+               self.get_proxima_peca(),
                self.sprites,
                self.criar_novo_tetromino,
                self.dados_campo)
