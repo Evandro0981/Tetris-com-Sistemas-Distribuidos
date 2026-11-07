@@ -37,7 +37,8 @@ class Jogo:
           # temporizador
           self.temporizadores = {
                'movimento vertical': Temporizador(VELOCIDADE_ATUALIZACAO_INICIAL, True, self.mover_pbaixo),
-               'movimento horizontal': Temporizador(TEMPO_ESPERA_MOVER) 
+               'movimento horizontal': Temporizador(TEMPO_ESPERA_MOVER),
+               'rotacao': Temporizador(TEMPO_ESPERA_ROTACIONAR)
           }
           self.temporizadores['movimento vertical'].ativar()
 
@@ -100,6 +101,8 @@ class Jogo:
           '''
           movimento = pygame.key.get_pressed()
 
+
+          #Checando os movimentos horizontais
           if not self.temporizadores['movimento horizontal'].ativo:  
                if movimento[pygame.K_LEFT]:
                     self.tetromino.move_horizontal(-1)
@@ -107,6 +110,13 @@ class Jogo:
                if movimento[pygame.K_RIGHT]:
                     self.tetromino.move_horizontal(1)
                     self.temporizadores['movimento horizontal'].ativar()
+          
+          #Checando a rotação
+          if not self.temporizadores['rotacao'].ativo:
+               if movimento[pygame.K_UP]:
+                    self.tetromino.rotacao()
+                    self.temporizadores['rotacao'].ativar()
+
 
      def checa_linha_completa(self):
           #Pegando o index comlpeto das linhas(Se houver uma linha completa vamos retornar o index dela).
@@ -139,6 +149,7 @@ class Tetromino:
      def __init__(self, forma, grupo, criar_novo_tetromino, dados_campo):
           
           # Base
+          self.forma = forma
           self.posicoes_blocos = TETROMINOS[forma]['forma']
           self.cor = TETROMINOS[forma]['cor']
           self.criar_novo_tetromino = criar_novo_tetromino
@@ -156,7 +167,7 @@ class Tetromino:
           lista_colisoes =[bloco.colisao_vertical(int(bloco.posicao.y + quantia), self.dados_campo) for bloco in self.blocos]
           return True if any(lista_colisoes) else False
 
-
+     #Movimento
      def move_horizontal(self, quantia):
           if not self.proxima_colisao_horizontal(self.blocos, quantia):
                for bloco in self.blocos:
@@ -173,8 +184,34 @@ class Tetromino:
                for bloco in self.blocos:
                     self.dados_campo[int(bloco.posicao.y)][int(bloco.posicao.x)] = bloco
                self.criar_novo_tetromino()
-          
-          
+
+     #Rotacao
+     def rotacao(self):
+          if self.forma != 'O':
+               #1. Ponto pivot(Referencia da peça que usares para girar-la, ou seja, no meio da peça)
+               pivot_posicao = self.blocos[0].posicao
+
+               #2. Nova posicao que o bloco irá ficar.
+               nova_posicao_bloco = [bloco.rotacao(pivot_posicao) for bloco in self.blocos]
+
+               #3. Checagem de colisao
+               for pos in nova_posicao_bloco:
+                    #Horizontal
+                    if pos.x < 0 or pos.x >= COLUNAS:
+                         return
+
+                    #Colisao com outras peças.
+                    if self.dados_campo[int(pos.y)][int(pos.x)]:
+                         return
+
+                    #Nova posicao na vertical
+                    if pos.y > LINHAS:
+                         return
+                    
+               #4. Implementando a nova posição.
+               for index,   bloco in enumerate(self.blocos):
+                    bloco.posicao = nova_posicao_bloco[index]
+
 '''  Classe Bloco servira para gerarmos os blocos do tetris
      A herança com Sprite do pygame serve para conseguirmos mostrar uma superficie e posiciona-la de forma mais simples.'''
 class Bloco(pygame.sprite.Sprite):
@@ -191,6 +228,12 @@ class Bloco(pygame.sprite.Sprite):
           self.posicao = pygame.Vector2(posicao) + DESLOCAMENTO_BLOCO
           
           self.rect = self.image.get_rect(topleft = self.posicao * TAMANHO_CELULA)
+
+     def rotacao(self, pivot_posicao):
+          distance = self.posicao - pivot_posicao
+          rodar = distance.rotate(90)
+          nova_posicao = pivot_posicao + rodar
+          return nova_posicao
 
      def colisao_horizontal(self, x, dados_campo):
           '''
