@@ -42,6 +42,7 @@ class Jogo:
           self.temporizadores['movimento vertical'].ativar()
 
      def criar_novo_tetromino(self):
+          self.checa_linha_completa()
           self.tetromino = Tetromino(
                choice(list(TETROMINOS.keys())),
                self.sprites,
@@ -107,7 +108,33 @@ class Jogo:
                     self.tetromino.move_horizontal(1)
                     self.temporizadores['movimento horizontal'].ativar()
 
+     def checa_linha_completa(self):
+          #Pegando o index comlpeto das linhas(Se houver uma linha completa vamos retornar o index dela).
+          linhas_para_apagar = []
 
+          '''Looping para cada linha
+               Percorre a matriz ate achar o index da linha completa.
+          '''
+          for index, linha in enumerate(self.dados_campo):
+               if all(linha):
+                    linhas_para_apagar.append(index)
+
+          if linhas_para_apagar:
+               for apagar_linha in linhas_para_apagar:
+                    #Apagando as linhas
+                    for bloco in self.dados_campo[apagar_linha]:
+                         bloco.kill()
+
+                    #Movendo os blocos para baixo
+                    for linha in self.dados_campo:
+                         for bloco in linha:
+                              if bloco and bloco.posicao.y < apagar_linha:
+                                   bloco.posicao.y += 1
+
+               self.dados_campo = [[0 for x in range(COLUNAS)] for y in range(LINHAS)]
+               for bloco in self.sprites:
+                    self.dados_campo[int(bloco.posicao.y)][int(bloco.posicao.x)] = bloco
+               
 class Tetromino:
      def __init__(self, forma, grupo, criar_novo_tetromino, dados_campo):
           
