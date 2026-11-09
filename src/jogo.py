@@ -182,7 +182,7 @@ class Jogo:
           #Aumenta a velocidade do jogo com base no level atual
           if self.linha_atual / 3 > self.level_atual:
                self.level_atual += 1
-               self.velocidade_descida *= 0.75
+               self.velocidade_descida *= 0.90
                self.descer_peca_rapida = self.velocidade_descida * 0.3
                self.temporizadores['movimento vertical'].duracao = self.velocidade_descida
 
