@@ -10,7 +10,7 @@ from temporizador import Temporizador
 
 
 class Jogo:
-     def __init__(self, get_proxima_peca):
+     def __init__(self, get_proxima_peca, atualiza_pontos):
           # Define a superficie da aba do jogo
           self.superficie = pygame.Surface((LARGURA_JOGO, ALTURA_JOGO))
           # Esse metodo permite com que obtenhamos o exibir_superficie, ou melhor dizendo, o display da superfície que estamos usando
@@ -21,6 +21,8 @@ class Jogo:
 
           #Conexão com o jogo.
           self.get_proxima_peca = get_proxima_peca
+          
+          self.atualiza_pontos = atualiza_pontos
           
           # linhas
           self.superficie_linha = self.superficie.copy()
@@ -36,13 +38,23 @@ class Jogo:
                self.criar_novo_tetromino,
                self.dados_campo)
           
+          #Velocidade para as pecas descerem
+          self.velocidade_descida = VELOCIDADE_ATUALIZACAO_INICIAL
+          self.descer_peca_rapida = self.velocidade_descida * 0.3
+          self.pressionada_tecla_descer = False
+
           # temporizador
           self.temporizadores = {
-               'movimento vertical': Temporizador(VELOCIDADE_ATUALIZACAO_INICIAL, True, self.mover_pbaixo),
+               'movimento vertical': Temporizador(self.velocidade_descida, True, self.mover_pbaixo),
                'movimento horizontal': Temporizador(TEMPO_ESPERA_MOVER),
                'rotacao': Temporizador(TEMPO_ESPERA_ROTACIONAR)
           }
           self.temporizadores['movimento vertical'].ativar()
+
+          #Pontos
+          self.level_atual = 1
+          self.pontos_atuais = 0
+          self.linha_atual = 0
 
      def criar_novo_tetromino(self):
           self.checa_linha_completa()
@@ -119,6 +131,14 @@ class Jogo:
                     self.tetromino.rotacao()
                     self.temporizadores['rotacao'].ativar()
 
+          #Velocidade de descida
+          if not self.pressionada_tecla_descer and movimento[pygame.K_DOWN]:
+               self.pressionada_tecla_descer = True
+               self.temporizadores['movimento vertical'].duracao = self.descer_peca_rapida
+
+          if self.pressionada_tecla_descer and not movimento[pygame.K_DOWN]:
+               self.pressionada_tecla_descer = False
+               self.temporizadores['movimento vertical'].duracao = self.velocidade_descida
 
      def checa_linha_completa(self):
           #Pegando o index comlpeto das linhas(Se houver uma linha completa vamos retornar o index dela).
@@ -146,7 +166,22 @@ class Jogo:
                self.dados_campo = [[0 for x in range(COLUNAS)] for y in range(LINHAS)]
                for bloco in self.sprites:
                     self.dados_campo[int(bloco.posicao.y)][int(bloco.posicao.x)] = bloco
-               
+          
+               self.calcula_pontos(len(linhas_para_apagar))
+
+     def calcula_pontos(self, numero_linhas):
+          self.linha_atual += numero_linhas
+          self.pontos_atuais += PONTOS_DADOS[numero_linhas] * self.level_atual
+
+          #Aumenta a velocidade do jogo com base no level atual
+          if self.linha_atual / 3 > self.level_atual:
+               self.level_atual += 1
+               self.velocidade_descida *= 0.75
+               self.descer_peca_rapida = self.velocidade_descida * 0.3
+               self.temporizadores['movimento vertical'].duracao = self.velocidade_descida
+
+          self.atualiza_pontos(self.linha_atual, self.pontos_atuais, self.level_atual)
+
 class Tetromino:
      def __init__(self, forma, grupo, criar_novo_tetromino, dados_campo):
           

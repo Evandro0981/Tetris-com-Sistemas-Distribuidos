@@ -22,9 +22,15 @@ class Main:
           self.proximas_pecas = [choice(list(TETROMINOS.keys())) for peca in range(3)]
           
           # componentes
-          self.jogo = Jogo(self.get_proximas_pecas) 
+          self.jogo = Jogo(self.get_proximas_pecas, self.atualiza_pontos) 
           self.pontuacao = Pontuacao()
           self.previa = Previa()
+
+     def atualiza_pontos(self, linhas, pontos, level):
+          self.pontuacao.linhas = linhas
+          self.pontuacao.pontos = pontos
+          self.pontuacao.level = level
+
           
      def executar(self):
           while True:
