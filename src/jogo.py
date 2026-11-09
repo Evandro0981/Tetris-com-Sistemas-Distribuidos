@@ -36,7 +36,8 @@ class Jogo:
                choice(list(TETROMINOS.keys())),
                self.sprites,
                self.criar_novo_tetromino,
-               self.dados_campo)
+               self.dados_campo,
+               self.finalizar_jogo)
           
           #Velocidade para as pecas descerem
           self.velocidade_descida = VELOCIDADE_ATUALIZACAO_INICIAL
@@ -56,13 +57,17 @@ class Jogo:
           self.pontos_atuais = 0
           self.linha_atual = 0
 
+          # Controle de encerramento
+          self.fim_de_jogo = False
+
      def criar_novo_tetromino(self):
           self.checa_linha_completa()
           self.tetromino = Tetromino(
                self.get_proxima_peca(),
                self.sprites,
                self.criar_novo_tetromino,
-               self.dados_campo)
+               self.dados_campo,
+               self.finalizar_jogo)
      
      def atualizar_temporizador(self):
           for temporizador in self.temporizadores.values():
@@ -96,10 +101,11 @@ class Jogo:
           self.superficie.blit(self.superficie_linha, (0,0))
           
      def executar(self):
-          # atualizar
-          self.input()
-          self.atualizar_temporizador()
-          self.sprites.update()
+          # O jogo só recebe inputs e atualiza o movimento enquanto o jogo não tiver acabado
+          if not self.fim_de_jogo:
+               self.input()
+               self.atualizar_temporizador()
+               self.sprites.update()
           
           self.superficie.fill(CINZA)
           self.sprites.draw(self.superficie)
@@ -107,7 +113,7 @@ class Jogo:
           self.desenhar_grade()
           # O método blit serve para colocarmos uma superficie em cima de outra superficie, nesse caso "superficie" -> "mostrar_superficie"
           self.mostrar_superficie.blit(self.superficie, (ESPACAMENTO, ESPACAMENTO))
-          pygame.draw.rect(self.mostrar_superficie, LINHA_COR, self.retangulo, 2, 2)    
+          pygame.draw.rect(self.mostrar_superficie, LINHA_COR, self.retangulo, 2, 2)
 
      def input(self):
           '''
@@ -182,8 +188,16 @@ class Jogo:
 
           self.atualiza_pontos(self.linha_atual, self.pontos_atuais, self.level_atual)
 
+     def finalizar_jogo(self):
+          '''
+          TODO: Elaborar mais coisas pra quando o jogo for encerrado
+          No momento apenas congela o jogo, não deixando as peças se movimentarem mais
+          '''
+          self.fim_de_jogo = True
+          self.temporizadores['movimento vertical'].desativar()
+
 class Tetromino:
-     def __init__(self, forma, grupo, criar_novo_tetromino, dados_campo):
+     def __init__(self, forma, grupo, criar_novo_tetromino, dados_campo, finalizar_jogo):
           
           # Base
           self.forma = forma
@@ -191,6 +205,7 @@ class Tetromino:
           self.cor = TETROMINOS[forma]['cor']
           self.criar_novo_tetromino = criar_novo_tetromino
           self.dados_campo = dados_campo
+          self.finalizar_jogo = finalizar_jogo
 
           # criando blocos
           self.blocos = [Bloco(grupo, posicao, self.cor) for posicao in self.posicoes_blocos]
@@ -215,6 +230,12 @@ class Tetromino:
                for bloco in self.blocos:
                     bloco.posicao.y += 1
           else:
+               ''' Chama a função de finalizar jogo quando a peça for posicionada no limite
+               '''
+               for bloco in self.blocos:
+                    if bloco.posicao.y <= 0:
+                         self.finalizar_jogo()
+                         return
                ''' Com este looping ele ira adicionar o Objeto Bloco na sua posição referente na matriz.
                     A matriz é inicializada com 0, sempre que um bloco chegar ao chão a matriz é atualizada com o Objeto ocupando o espaço referente a peça na matriz. 
                '''
