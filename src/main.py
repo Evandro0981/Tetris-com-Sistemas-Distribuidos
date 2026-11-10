@@ -5,6 +5,7 @@ from sys import exit
 from jogo import Jogo
 from pontuacao import Pontuacao
 from previa import Previa
+from tela_inicial import TelaInicial
 
 from random import choice
 
@@ -18,20 +19,32 @@ class Main:
           # Título da janela
           pygame.display.set_caption('Tetris')
 
-          #Pecas
+          # Estado do jogo ('menu' ou 'jogando')
+          self.estado = 'menu'
+          self.tela_inicial = TelaInicial(self.exibir_superficie, self.iniciar_jogo)
+
+          # Componentes do jogo
+          self.jogo = None
+          self.pontuacao = None
+          self.previa = None
+          self.proximas_pecas = []
+
+     def iniciar_jogo(self):
+          # Pecas
           self.proximas_pecas = [choice(list(TETROMINOS.keys())) for peca in range(3)]
           
           # componentes
           self.jogo = Jogo(self.get_proximas_pecas, self.atualiza_pontos) 
           self.pontuacao = Pontuacao()
           self.previa = Previa()
+          self.estado = 'jogando'
 
      def atualiza_pontos(self, linhas, pontos, level):
-          self.pontuacao.linhas = linhas
-          self.pontuacao.pontos = pontos
-          self.pontuacao.level = level
+          if self.pontuacao:
+               self.pontuacao.linhas = linhas
+               self.pontuacao.pontos = pontos
+               self.pontuacao.level = level
 
-          
      def executar(self):
           while True:
                # Esta sessão serve para finalizar o programa, sem ela a janela do jogo rodaria sem parar.
@@ -39,14 +52,23 @@ class Main:
                     if event.type == pygame.QUIT:
                          pygame.quit()
                          exit()
+
+                    if self.estado == 'menu':
+                         self.tela_inicial.tratar_evento(event)
+                    elif self.estado == 'jogando':
+                         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                              self.estado = 'menu'
                
                # Exibição
                self.exibir_superficie.fill(CINZA)
              
-               # Componentes
-               self.jogo.executar()
-               self.pontuacao.executar()
-               self.previa.executar(self.proximas_pecas)
+               # Componentes conforme o estado atual
+               if self.estado == 'menu':
+                    self.tela_inicial.desenhar()
+               elif self.estado == 'jogando':
+                    self.jogo.executar()
+                    self.pontuacao.executar()
+                    self.previa.executar(self.proximas_pecas)
                
                # Atualizando o jogo
                # Atualiza tudo que vemos dentro do jogo, assim podemos ver a janela do jogo
