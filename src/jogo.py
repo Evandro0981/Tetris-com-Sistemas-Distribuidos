@@ -6,15 +6,22 @@
 from configuracao import *
 from random import choice
 from temporizador import Temporizador
-
+from os import path
 
 
 class Jogo:
      def __init__(self, get_proxima_peca, atualiza_pontos):
+          
+          # efeito sonoro
+          self.som_linha = pygame.mixer.Sound(path.join('src', 'audio', 'Tetris_clear_line.mp3'))
+          self.som_linha.set_volume(0.5)
+          
           # Define a superficie da aba do jogo
           self.superficie = pygame.Surface((LARGURA_JOGO, ALTURA_JOGO))
+          
           # Esse metodo permite com que obtenhamos o exibir_superficie, ou melhor dizendo, o display da superfície que estamos usando
           self.mostrar_superficie = pygame.display.get_surface()
+          
           # Estamos definindo um retangulo aqui, para tracejar uma borda para todo o jogo.
           self.retangulo = self.superficie.get_rect(topleft = (ESPACAMENTO, ESPACAMENTO))
           self.sprites = pygame.sprite.Group()
@@ -159,6 +166,11 @@ class Jogo:
 
           if linhas_para_apagar:
                for apagar_linha in linhas_para_apagar:
+               
+                    # efeito sonoro da linha
+                    if self.som_linha.get_num_channels() == 0:
+                         self.som_linha.play()
+                    
                     #Apagando as linhas
                     for bloco in self.dados_campo[apagar_linha]:
                          bloco.kill()

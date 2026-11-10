@@ -16,7 +16,7 @@ class Main:
           # musica de fundo
           pygame.mixer.init()
           
-          caminho_musica = path.join('audio', 'Tetris_theme.mp3')
+          caminho_musica = path.join('src', 'audio', 'Tetris_theme.mp3')
           
           pygame.mixer.music.load(caminho_musica)
           pygame.mixer.music.set_volume(0.3)
