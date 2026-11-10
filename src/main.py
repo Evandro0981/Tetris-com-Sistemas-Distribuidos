@@ -7,10 +7,21 @@ from pontuacao import Pontuacao
 from previa import Previa
 
 from random import choice
+from os import path
 
 class Main:
      def __init__(self):
           pygame.init()
+          
+          # musica de fundo
+          pygame.mixer.init()
+          
+          caminho_musica = path.join('audio', 'Tetris_theme.mp3')
+          
+          pygame.mixer.music.load(caminho_musica)
+          pygame.mixer.music.set_volume(0.3)
+          pygame.mixer.music.play(-1)
+          
           # Criando a superfície do jogo com o pygame 
           self.exibir_superficie = pygame.display.set_mode((LARGURA_JANELA, ALTURA_JANELA))
           # Utilizaremos o relógio para várias coisas no jogo, já que ele permitirá que mexamos com o tempo do jogo.
