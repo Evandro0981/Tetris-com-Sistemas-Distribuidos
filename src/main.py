@@ -9,6 +9,7 @@ from pontuacao import Pontuacao
 from previa import Previa
 from tela_inicial import TelaInicial
 from rede import ClienteRede
+from tela_fim_de_jogo import TelaFimDeJogo
 
 OFFSET_EQ1 = 0
 OFFSET_EQ2 = LARGURA_TABULEIRO_COMPLETO + ESPACAMENTO
@@ -38,6 +39,9 @@ class Main:
         # Estado do jogo ('menu' ou 'jogando')
         self.estado = 'menu'
         self.tela_inicial = TelaInicial(self.exibir_superficie, self.iniciar_jogo, self.rede)
+        self.tela_fim = TelaFimDeJogo(self.exibir_superficie, ao_revanche=self.pedir_revanche, ao_voltar_inicio=self.pedir_voltar_inicio)
+
+        self._revanche_pedida = False
 
         # Equipe 1 (Esquerda)
         self.jogo1 = None
@@ -99,7 +103,22 @@ class Main:
     def despachar_mensagem(self, msg):
         tipo = msg.get("tipo")
 
+        if tipo == "RESULTADO_FINAL":
+            self.tela_fim.definir_resultado(msg.get("pontos_eq1", 0), msg.get("pontos_eq2", 0))
+            self.estado = 'fim_de_jogo'
+            self._revanche_pedida = False
+            return
+
+        if tipo == "ESPERA_REVANCHE":
+            self.tela_fim.definir_espera_revanche(msg.get("confirmados", 0), msg.get("total", 4))
+            return
+
+        if tipo == "VOLTAR_INICIO_FORCADO":
+            self.voltar_ao_menu()
+            return
+
         if tipo == "INICIAR_JOGO":
+            self._revanche_pedida = False
             self.iniciar_jogo(pecas_eq1=msg.get("pecas_eq1"), pecas_eq2=msg.get("pecas_eq2"))
             return
 
@@ -162,6 +181,8 @@ class Main:
                 elif self.estado == 'jogando':
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                         self.estado = 'menu'
+                elif self.estado == 'fim_de_jogo':
+                    self.tela_fim.tratar_evento(event)
 
             # Esvazia a fila de rede uma vez por quadro e despacha na ordem de chegada
             for msg in self.rede.coletar_mensagens():
@@ -169,6 +190,14 @@ class Main:
 
             self.exibir_superficie.fill(CINZA)
 
+            # Detecta fim de jogo local (offline)
+            if (self.estado == 'jogando' and not self.rede.conectado
+                    and self.jogo1 and self.jogo2
+                    and self.jogo1.fim_de_jogo and self.jogo2.fim_de_jogo):
+                self.tela_fim.definir_resultado(self.jogo1.pontos_atuais, self.jogo2.pontos_atuais)
+                self.estado = 'fim_de_jogo'
+                self._revanche_pedida = False
+                
             if self.estado == 'menu':
                 self.tela_inicial.desenhar()
             elif self.estado == 'jogando':
@@ -183,10 +212,41 @@ class Main:
                 self.jogo2.executar()
                 self.pontuacao2.executar()
                 self.previa2.executar(self.proximas_pecas2)
+            elif self.estado == 'fim_de_jogo':
+                self.tela_fim.desenhar()
 
             pygame.display.update()
             self.relogio.tick(60)
 
+    def pedir_revanche(self):
+        if self._revanche_pedida:
+            return
+        if not self.rede.conectado:
+            # Offline: reinicia direto
+            self.iniciar_jogo()
+            return
+        self._revanche_pedida = True
+        self.rede.enviar({"tipo": "PEDIR_REVANCHE", "id": self.rede.id})
+        self.tela_fim.marcar_revanche_clicada()
+
+
+    def pedir_voltar_inicio(self):
+        if self.rede.conectado:
+            self.rede.enviar({"tipo": "VOLTAR_INICIO", "id": self.rede.id})
+        # Offline: volta direto
+        self.voltar_ao_menu()
+
+
+    def voltar_ao_menu(self):
+        self.estado = 'menu'
+        self._revanche_pedida = False
+        self.tela_fim.cancelar_espera_revanche()
+        self.jogo1 = None
+        self.jogo2 = None
+        self.pontuacao1 = None
+        self.pontuacao2 = None
+        self.previa1 = None
+        self.previa2 = None
 
 if __name__ == '__main__':
     main = Main()

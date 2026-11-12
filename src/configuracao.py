@@ -29,6 +29,13 @@ TEMPO_ESPERA_MOVER = 150
 TEMPO_ESPERA_ROTACIONAR = 200
 DESLOCAMENTO_BLOCO = pygame.Vector2(COLUNAS // 2, -1)
 
+'''--Tela-de-Fim-de-Jogo--'''
+DOURADO = '#f1e60d'
+BRANCO = '#FFFFFF'
+CINZA_BOTAO = '#3C3C3C'
+CINZA_HOVER = '#5A5A5A'
+TEMPO_ESPERA_REVANCHE = 3000  # ms — tempo para outros jogadores clicarem
+
 # Cores
 AMARELO = '#f1e60d'
 VERMELHO = '#e51b20'

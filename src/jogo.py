@@ -212,6 +212,10 @@ class Jogo:
         self.temporizadores['movimento vertical'].desativar()
         if notificar and self.sou_autoridade():
             self.enviar({"tipo": "FIM_JOGO"})
+            self.enviar({
+                'tipo': 'FIM_JOGO_REPORT',
+                'pontos': self.pontos_atuais
+            })
 
     # ------------------------------------------------------------------
     # Loop, desenho e input
