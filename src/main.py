@@ -95,11 +95,29 @@ class Main:
 
         self.estado = 'jogando'
 
+    def enviar_linha_ataque(self, equipe_atacante, quantidade=1):
+        equipe_alvo = 'EQUIPE_2' if equipe_atacante == 'EQUIPE_1' else 'EQUIPE_1'
+        jogo_alvo = self.jogo2 if equipe_alvo == 'EQUIPE_2' else self.jogo1
+        if not jogo_alvo or jogo_alvo.fim_de_jogo:
+            return
+
+        if self.rede and self.rede.conectado:
+            self.rede.enviar({
+                "tipo": "SOLICITAR_ATAQUE",
+                "equipe": equipe_alvo,
+                "quantidade": quantidade
+            })
+        else:
+            for _ in range(quantidade):
+                jogo_alvo.adicionar_linha_ataque(2)
+
     def atualiza_pontos_1(self, linhas, pontos, level):
         if self.pontuacao1:
             novas_linhas = linhas - self.pontuacao1.linhas
             if novas_linhas > 0:
                 self.disparar_feedback_linhas(1, novas_linhas)
+                if self.jogo1 and self.jogo1.sou_autoridade():
+                    self.enviar_linha_ataque('EQUIPE_1', quantidade=1)
             self.pontuacao1.linhas = linhas
             self.pontuacao1.pontos = pontos
             self.pontuacao1.level = level
@@ -109,9 +127,12 @@ class Main:
             novas_linhas = linhas - self.pontuacao2.linhas
             if novas_linhas > 0:
                 self.disparar_feedback_linhas(2, novas_linhas)
+                if self.jogo2 and self.jogo2.sou_autoridade():
+                    self.enviar_linha_ataque('EQUIPE_2', quantidade=1)
             self.pontuacao2.linhas = linhas
             self.pontuacao2.pontos = pontos
             self.pontuacao2.level = level
+
 
 
     def _sacar_peca(self, lista):
