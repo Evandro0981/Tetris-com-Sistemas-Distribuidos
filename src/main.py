@@ -10,15 +10,21 @@ from previa import Previa
 from tela_inicial import TelaInicial
 from rede import ClienteRede
 from tela_fim_de_jogo import TelaFimDeJogo
+from feedback_texto import FeedbackTexto
 
 OFFSET_EQ1 = 0
 OFFSET_EQ2 = LARGURA_TABULEIRO_COMPLETO + ESPACAMENTO
 NOMES_FUNCAO = {'MOVIMENTO': 'MOVIMENTO', 'ROTACAO': 'ROTAÇÃO'}
 
+CENTRO_JOGO_EQ1 = (ESPACAMENTO + OFFSET_EQ1 + LARGURA_JOGO // 2, ESPACAMENTO + ALTURA_JOGO // 2)
+CENTRO_JOGO_EQ2 = (ESPACAMENTO + OFFSET_EQ2 + LARGURA_JOGO // 2, ESPACAMENTO + ALTURA_JOGO // 2)cd ..
 
 class Main:
     def __init__(self):
         pygame.init()
+
+        # Feedback de texto
+        self.feedback = FeedbackTexto()
 
         # musica de fundo
         pygame.mixer.init()
@@ -63,6 +69,8 @@ class Main:
             self.proximas_pecas1 = [choice(list(TETROMINOS.keys())) for _ in range(5)]
             self.proximas_pecas2 = [choice(list(TETROMINOS.keys())) for _ in range(5)]
 
+        self.feedback.limpar()
+
         # Instancia Equipe 1
         self.jogo1 = Jogo(self.get_proximas_pecas_1, self.atualiza_pontos_1, self.rede, offset_x=OFFSET_EQ1, equipe='EQUIPE_1')
         self.pontuacao1 = Pontuacao(offset_x=OFFSET_EQ1)
@@ -77,15 +85,22 @@ class Main:
 
     def atualiza_pontos_1(self, linhas, pontos, level):
         if self.pontuacao1:
+            novas_linhas = linhas - self.pontuacao1.linhas
+            if novas_linhas > 0:
+                self.disparar_feedback_linhas(1, novas_linhas)
             self.pontuacao1.linhas = linhas
             self.pontuacao1.pontos = pontos
             self.pontuacao1.level = level
 
     def atualiza_pontos_2(self, linhas, pontos, level):
         if self.pontuacao2:
+            novas_linhas = linhas - self.pontuacao2.linhas
+            if novas_linhas > 0:
+                self.disparar_feedback_linhas(2, novas_linhas)
             self.pontuacao2.linhas = linhas
             self.pontuacao2.pontos = pontos
             self.pontuacao2.level = level
+
 
     def _sacar_peca(self, lista):
         peca = lista.pop(0) if lista else choice(list(TETROMINOS.keys()))
@@ -211,7 +226,9 @@ class Main:
                 # Desenha Equipe 2 (Direita)
                 self.jogo2.executar()
                 self.pontuacao2.executar()
-                self.previa2.executar(self.proximas_pecas2)
+                self.previa2.executar(self.proximas_pecas2) 
+                # Desenha os feedbacks flutuantes por cima de ambos os tabuleiros
+                self.feedback.executar(self.exibir_superficie)
             elif self.estado == 'fim_de_jogo':
                 self.tela_fim.desenhar()
 
@@ -247,6 +264,18 @@ class Main:
         self.pontuacao2 = None
         self.previa1 = None
         self.previa2 = None
+        self.feedback.limpar()
+
+    def disparar_feedback_linhas(self, equipe_num, numero_linhas):
+        mensagens = {
+            1: ('LINHA COMPLETA!', AMARELO),
+            2: ('LINHA DUPLA!', CIANO),
+            3: ('LINHA TRIPLA!', LARANJA),
+            4: ('TETRIS!', VERDE)
+        }
+        texto, cor = mensagens.get(numero_linhas, (f'+{numero_linhas} LINHAS!', AMARELO))
+        posicao = CENTRO_JOGO_EQ1 if equipe_num == 1 else CENTRO_JOGO_EQ2
+        self.feedback.criar_feedback(texto, posicao=posicao, cor=cor)
 
 if __name__ == '__main__':
     main = Main()
