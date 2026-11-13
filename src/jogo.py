@@ -1,6 +1,7 @@
 from configuracao import *
 from temporizador import Temporizador
 from os import path
+from random import choice, randint
 
 
 class Jogo:
@@ -156,6 +157,20 @@ class Jogo:
         elif tipo == "GRID_SYNC":
             if not self.sou_autoridade():
                 self.aplicar_grid_sync(msg)
+
+        elif tipo == "SOLICITAR_ATAQUE":
+            if self.sou_autoridade() and not self.fim_de_jogo:
+                quantidade = msg.get("quantidade", 1)
+                for _ in range(quantidade):
+                    buracos = self.adicionar_linha_ataque()
+                    if buracos is not None:
+                        self.enviar({"tipo": "LINHA_ATAQUE", "buracos": buracos})
+                    if self.fim_de_jogo:
+                        break
+
+        elif tipo == "LINHA_ATAQUE":
+            if not self.sou_autoridade():
+                self.adicionar_linha_ataque(buracos=msg.get("buracos"))
 
         elif tipo == "FIM_JOGO":
             self.finalizar_jogo(notificar=False)
@@ -396,3 +411,70 @@ class Bloco(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.topleft = self.posicao * TAMANHO_CELULA
+
+    def adicionar_linha_ataque(self, quantidade_buracos=1, buracos=None):
+        '''
+        Empurra todas as peças fixas uma linha para cima e insere uma nova linha
+        de ataque na base (fundo) com buracos aleatórios (mecânica multiplayer).
+        '''
+        if self.fim_de_jogo:
+            return None
+
+        # 1. Identifica apenas os blocos que já estão fixados na grade
+        blocos_fixos = [
+            bloco for linha in self.dados_campo 
+            for bloco in linha if bloco is not None and bloco != 0
+        ]
+
+        # 2. Checagem de Game Over: se algum bloco já estiver no topo (y <= 0),
+        # empurrá-lo para cima fará ele passar do limite da tela
+        for bloco in blocos_fixos:
+            if bloco.posicao.y <= 0:
+                self.finalizar_jogo()
+                return None
+
+        # 3. Empurra todos os blocos fixos 1 linha para cima (y -= 1)
+        for bloco in blocos_fixos:
+            bloco.posicao.y -= 1
+
+        # 4. Escolhe ou utiliza as colunas que serão buracos (vazias)
+        if buracos is None:
+            qtd = max(1, min(quantidade_buracos, COLUNAS - 1))
+            conjunto_buracos = set()
+            while len(conjunto_buracos) < qtd:
+                conjunto_buracos.add(randint(0, COLUNAS - 1))
+            buracos = list(conjunto_buracos)
+        else:
+            conjunto_buracos = set(buracos)
+
+        # 5. Cria os novos blocos da linha de ataque no fundo (y = LINHAS - 1)
+        COR_ATAQUE = '#707070'
+        y_fundo = LINHAS - 1
+        novos_blocos = []
+        for x in range(COLUNAS):
+            if x not in conjunto_buracos:
+                pos_ajustada = pygame.Vector2(x, y_fundo) - DESLOCAMENTO_BLOCO
+                novo_bloco = Bloco(self.sprites, pos_ajustada, COR_ATAQUE)
+                novos_blocos.append(novo_bloco)
+
+        # 6. Reconstrói a matriz 'dados_campo' limpando no lugar para preservar a referência
+        self.limpar_campo()
+        todos_blocos_campo = blocos_fixos + novos_blocos
+        for bloco in todos_blocos_campo:
+            x = round(bloco.posicao.x)
+            y = round(bloco.posicao.y)
+            if 0 <= y < LINHAS and 0 <= x < COLUNAS:
+                self.dados_campo[y][x] = bloco
+
+        # 7. Ajusta a peça ativa se o chão subir e encostar nela
+        if hasattr(self, 'tetromino') and self.tetromino:
+            colidiu = any(
+                self.dados_campo[round(b.posicao.y)][round(b.posicao.x)] != 0
+                for b in self.tetromino.blocos
+                if 0 <= round(b.posicao.y) < LINHAS and 0 <= round(b.posicao.x) < COLUNAS
+            )
+            if colidiu:
+                for b in self.tetromino.blocos:
+                    b.posicao.y -= 1
+
+        return buracos
