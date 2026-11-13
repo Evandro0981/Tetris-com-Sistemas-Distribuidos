@@ -31,9 +31,10 @@ DESLOCAMENTO_BLOCO = pygame.Vector2(COLUNAS // 2, -1)
 
 '''--Tela-de-Fim-de-Jogo--'''
 DOURADO = '#f1e60d'
-BRANCO = '#FFFFFF'
-CINZA_BOTAO = '#3C3C3C'
-CINZA_HOVER = '#5A5A5A'
+BRANCO = "#FFFFFF"
+CINZA_BOTAO = '#25233D'
+CINZA_HOVER = '#3A375E'
+COR_RELEVO = '#c2bfff'
 TEMPO_ESPERA_REVANCHE = 3000  # ms — tempo para outros jogadores clicarem
 
 # Cores
@@ -44,8 +45,8 @@ VERDE = '#65b32e'
 ROXO = '#7b217f'
 CIANO = '#6cc6d9'
 LARANJA = '#f07e13'
-CINZA = '#1C1C1C'
-LINHA_COR = '#FFFFFF'
+CINZA = '#1d1c36'
+LINHA_COR = "#D6D8FF"
 
 # Formas
 TETROMINOS = {
