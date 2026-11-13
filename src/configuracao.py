@@ -45,7 +45,9 @@ VERDE = '#65b32e'
 ROXO = '#7b217f'
 CIANO = '#6cc6d9'
 LARANJA = '#f07e13'
-CINZA = '#1d1c36'
+COR_FUNDO = '#1d1c36'
+COR_SECUNDARIA_FUNDO = '#121126'
+CINZA = COR_FUNDO  # Alias para compatibilidade
 LINHA_COR = "#D6D8FF"
 
 # Formas

@@ -1,5 +1,5 @@
 import pygame
-from configuracao import CINZA, DOURADO, BRANCO, CINZA_BOTAO, CINZA_HOVER
+from configuracao import COR_FUNDO, DOURADO, BRANCO, CINZA_BOTAO, CINZA_HOVER
 
 
 class TelaFimDeJogo:
@@ -106,7 +106,7 @@ class TelaFimDeJogo:
 
         for nome, rect in self.rects_cartoes.items():
             eh_vencedor = (nome == self.vencedor)
-            pygame.draw.rect(self.superficie, CINZA, rect)
+            pygame.draw.rect(self.superficie, COR_FUNDO, rect)
             pygame.draw.rect(self.superficie, DOURADO if eh_vencedor else BRANCO,
                              rect, 4 if eh_vencedor else 2, 2)
             self.desenhar_texto_centralizado(nome, self.fonte_equipe, BRANCO, (rect.centerx, rect.y + 45))

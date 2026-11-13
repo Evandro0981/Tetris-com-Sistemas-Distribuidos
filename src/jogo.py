@@ -241,7 +241,7 @@ class Jogo:
             self.atualizar_temporizador()
             self.sprites.update()
 
-        self.superficie.fill(CINZA)
+        self.superficie.fill(COR_FUNDO)
         self.sprites.draw(self.superficie)
         self.desenhar_grade()
 

@@ -203,7 +203,12 @@ class Main:
             for msg in self.rede.coletar_mensagens():
                 self.despachar_mensagem(msg)
 
-            self.exibir_superficie.fill(CINZA)
+            self.exibir_superficie.fill(COR_FUNDO)
+            pygame.draw.rect(
+                self.exibir_superficie,
+                COR_SECUNDARIA_FUNDO,
+                (0, ALTURA_JANELA // 2, LARGURA_JANELA, ALTURA_JANELA // 2)
+            )
 
             # Detecta fim de jogo local (offline)
             if (self.estado == 'jogando' and not self.rede.conectado

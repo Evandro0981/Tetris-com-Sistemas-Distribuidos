@@ -2,7 +2,7 @@ import pygame
 import math
 from os import path
 from configuracao import (
-    CINZA, BRANCO, CINZA_BOTAO, CINZA_HOVER, COR_RELEVO,
+    COR_FUNDO, COR_SECUNDARIA_FUNDO, BRANCO, CINZA_BOTAO, CINZA_HOVER, COR_RELEVO,
     DOURADO, VERMELHO, VERDE, AMARELO, LINHA_COR
 )
 
@@ -44,12 +44,14 @@ class TelaInicial:
             self.fonte_input = pygame.font.Font(caminho_fonte, 20)
             self.fonte_titulo = pygame.font.Font(caminho_fonte, 32)
             self.fonte_status = pygame.font.Font(caminho_fonte, 16)
+            self.fonte_subtitulo = pygame.font.Font(caminho_fonte, 12)
         else:
             self.fonte_botoes = pygame.font.Font(None, 26)
             self.fonte_rotulo = pygame.font.Font(None, 22)
             self.fonte_input = pygame.font.Font(None, 26)
             self.fonte_titulo = pygame.font.Font(None, 40)
             self.fonte_status = pygame.font.Font(None, 22)
+            self.fonte_subtitulo = pygame.font.Font(None, 16)
 
         self.fonte = self.fonte_botoes
         self.fonte_instrucoes = pygame.font.Font(None, 24)
@@ -80,12 +82,12 @@ class TelaInicial:
         centro_x = largura_tela // 2
 
         # Dimensões e posicionamento dos botões (1 VERSUS 1, 2 VERSUS 2, COMO JOGAR)
-        largura_botao = 230
+        largura_botao = 250
         altura_botao = 52
-        espaco_botoes = 35
+        espaco_botoes = 40
         total_largura_botoes = (largura_botao * 3) + (espaco_botoes * 2)
         x_inicial = (largura_tela - total_largura_botoes) // 2
-        y_botoes = 450
+        y_botoes = 430
 
         self.rect_botao_1v1 = pygame.Rect(x_inicial, y_botoes, largura_botao, altura_botao)
         self.rect_botao_2v2 = pygame.Rect(x_inicial + largura_botao + espaco_botoes, y_botoes, largura_botao, altura_botao)
@@ -95,12 +97,20 @@ class TelaInicial:
         self.rect_botao_iniciar = self.rect_botao_1v1
         self.rect_botao_conectar = self.rect_botao_2v2
 
-        # Campo de IP do Servidor (abaixo do botão 2 VERSUS 2)
-        largura_input = 240
+        # Subtítulos dos botões
+        self.subtitulos = {
+            '1v1': "WASD vs Setas no mesmo computador",
+            '2v2': "4 computadores se conectam a 1 servidor",
+            'como_jogar': "Controles e Instruções pro 2 versus 2"
+        }
+
+        # Campo de IP do Servidor (abaixo do botão 2 VERSUS 2 e seu subtítulo)
+        largura_input = 250
         altura_input = 48
         self.ip_servidor = "127.0.0.1"
         self.input_ativo = False
-        self.rect_input = pygame.Rect(centro_x - (largura_input // 2), 568, largura_input, altura_input)
+        self.y_label_ip = y_botoes + altura_botao + 46
+        self.rect_input = pygame.Rect(centro_x - (largura_input // 2), self.y_label_ip + 22, largura_input, altura_input)
 
         # Elementos da tela COMO JOGAR
         largura_card = 820
@@ -173,12 +183,12 @@ class TelaInicial:
 
         # 1. Relevo 3D na parte de baixo (#c2bfff)
         rect_relevo = pygame.Rect(rect.x, rect.y + profundidade, rect.width, rect.height)
-        pygame.draw.rect(self.superficie, COR_RELEVO, rect_relevo, border_radius=12)
+        pygame.draw.rect(self.superficie, COR_RELEVO, rect_relevo, border_radius=6)
 
         # 2. Face do botão com borda branca
         rect_face = pygame.Rect(rect.x, rect.y + deslocamento, rect.width, rect.height)
-        pygame.draw.rect(self.superficie, cor_fundo, rect_face, border_radius=12)
-        pygame.draw.rect(self.superficie, BRANCO, rect_face, width=2, border_radius=12)
+        pygame.draw.rect(self.superficie, cor_fundo, rect_face, border_radius=6)
+        pygame.draw.rect(self.superficie, BRANCO, rect_face, width=2, border_radius=6)
 
         # 3. Texto centralizado
         texto_surf = self.fonte_botoes.render(texto, True, cor_texto)
@@ -194,11 +204,11 @@ class TelaInicial:
 
         # 1. Relevo 3D debaixo da borda branca (#c2bfff)
         rect_relevo = pygame.Rect(self.rect_input.x, self.rect_input.y + profundidade, self.rect_input.width, self.rect_input.height)
-        pygame.draw.rect(self.superficie, COR_RELEVO, rect_relevo, border_radius=10)
+        pygame.draw.rect(self.superficie, COR_RELEVO, rect_relevo, border_radius=4)
 
         # 2. Face do campo de input com borda branca
-        pygame.draw.rect(self.superficie, CINZA_BOTAO, self.rect_input, border_radius=10)
-        pygame.draw.rect(self.superficie, BRANCO, self.rect_input, width=2, border_radius=10)
+        pygame.draw.rect(self.superficie, CINZA_BOTAO, self.rect_input, border_radius=4)
+        pygame.draw.rect(self.superficie, BRANCO, self.rect_input, width=2, border_radius=4)
 
         # 3. Texto do IP centralizado
         surf_ip = self.fonte_input.render(self.ip_servidor, True, BRANCO)
@@ -225,9 +235,9 @@ class TelaInicial:
                 self.rect_card_como_jogar.width,
                 self.rect_card_como_jogar.height
             )
-            pygame.draw.rect(self.superficie, COR_RELEVO, relevo_card, border_radius=16)
-            pygame.draw.rect(self.superficie, CINZA_BOTAO, self.rect_card_como_jogar, border_radius=16)
-            pygame.draw.rect(self.superficie, BRANCO, self.rect_card_como_jogar, width=2, border_radius=16)
+            pygame.draw.rect(self.superficie, COR_RELEVO, relevo_card, border_radius=8)
+            pygame.draw.rect(self.superficie, CINZA_BOTAO, self.rect_card_como_jogar, border_radius=8)
+            pygame.draw.rect(self.superficie, BRANCO, self.rect_card_como_jogar, width=2, border_radius=8)
 
             # Título
             titulo = self.fonte_titulo.render("COMO JOGAR", True, BRANCO)
@@ -258,20 +268,30 @@ class TelaInicial:
         if self.logo:
             tempo = pygame.time.get_ticks() / 1000.0
             flutuacao = math.sin(tempo * 2.0) * 5.0
-            rect_logo = self.logo.get_rect(center=(centro_x, int(230 + flutuacao)))
+            rect_logo = self.logo.get_rect(center=(centro_x, int(215 + flutuacao)))
             self.superficie.blit(self.logo, rect_logo)
         else:
             titulo = self.fonte_titulo.render("TETRA-LINK", True, BRANCO)
-            self.superficie.blit(titulo, titulo.get_rect(center=(centro_x, 230)))
+            self.superficie.blit(titulo, titulo.get_rect(center=(centro_x, 215)))
 
         # 2. Botões horizontais: 1 VERSUS 1 | 2 VERSUS 2 | COMO JOGAR
         hover_1v1 = self.desenhar_botao_3d(self.rect_botao_1v1, "1 VERSUS 1")
         hover_2v2 = self.desenhar_botao_3d(self.rect_botao_2v2, "2 VERSUS 2")
         hover_como_jogar = self.desenhar_botao_3d(self.rect_botao_como_jogar, "COMO JOGAR")
 
+        # Subtítulos dos botões com a fonte Russo_One
+        sub_1v1 = self.fonte_subtitulo.render(self.subtitulos['1v1'], True, LINHA_COR)
+        self.superficie.blit(sub_1v1, sub_1v1.get_rect(center=(self.rect_botao_1v1.centerx, self.rect_botao_1v1.bottom + 14)))
+
+        sub_2v2 = self.fonte_subtitulo.render(self.subtitulos['2v2'], True, LINHA_COR)
+        self.superficie.blit(sub_2v2, sub_2v2.get_rect(center=(self.rect_botao_2v2.centerx, self.rect_botao_2v2.bottom + 14)))
+
+        sub_como = self.fonte_subtitulo.render(self.subtitulos['como_jogar'], True, LINHA_COR)
+        self.superficie.blit(sub_como, sub_como.get_rect(center=(self.rect_botao_como_jogar.centerx, self.rect_botao_como_jogar.bottom + 14)))
+
         # 3. Rótulo "IP DO SERVIDOR:"
         texto_label = self.fonte_rotulo.render("IP DO SERVIDOR:", True, BRANCO)
-        rect_label = texto_label.get_rect(center=(self.rect_input.centerx, self.rect_input.y - 18))
+        rect_label = texto_label.get_rect(center=(self.rect_input.centerx, self.y_label_ip))
         self.superficie.blit(texto_label, rect_label)
 
         # 4. Campo de Input 3D

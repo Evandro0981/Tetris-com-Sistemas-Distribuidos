@@ -24,7 +24,7 @@ class Pontuacao:
           self.superficie.blit(superficie_texto, area_texto)
           
      def executar(self):
-          self.superficie.fill(CINZA)
+          self.superficie.fill(COR_FUNDO)
           for index, texto in enumerate([('Pontos', self.pontos), ('Level', self.level), ('Linhas', self.linhas)]):
                x = self.superficie.get_width() / 2
                y = self.incrementa_altura / 2 + index * self.incrementa_altura

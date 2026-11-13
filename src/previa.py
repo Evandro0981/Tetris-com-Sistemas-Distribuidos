@@ -23,7 +23,7 @@ class Previa:
                self.superficie.blit(imagem_peca, retangulo)
 
      def executar(self, proximas_pecas):
-          self.superficie.fill(CINZA)
+          self.superficie.fill(COR_FUNDO)
           self.mostrar_pecas(proximas_pecas)
           self.mostrar_superficie.blit(self.superficie, self.retangulo)
           pygame.draw.rect(self.mostrar_superficie, LINHA_COR, self.retangulo, 2, 2)
