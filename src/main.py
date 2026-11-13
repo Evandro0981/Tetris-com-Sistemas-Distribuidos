@@ -1,5 +1,4 @@
 from configuracao import *
-from sys import exit
 from random import choice
 from os import path
 
@@ -11,6 +10,14 @@ from tela_inicial import TelaInicial
 from rede import ClienteRede
 from tela_fim_de_jogo import TelaFimDeJogo
 from feedback_texto import FeedbackTexto
+# Deixa o ícone ser exibido corretamente na barra de tarefas do Windows
+import ctypes
+import sys
+
+if sys.platform == "win32":
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+        "MeuJogo.Tetris.2vs2"
+    )
 
 OFFSET_EQ1 = 0
 OFFSET_EQ2 = LARGURA_TABULEIRO_COMPLETO + ESPACAMENTO
@@ -23,6 +30,11 @@ class Main:
     def __init__(self):
         pygame.init()
 
+        # Carrega o ícone
+        icone = pygame.image.load("img/icon.png")
+
+        # Define o ícone da janela
+        pygame.display.set_icon(icone)
         # Feedback de texto
         self.feedback = FeedbackTexto()
 

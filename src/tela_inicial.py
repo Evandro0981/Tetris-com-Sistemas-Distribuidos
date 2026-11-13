@@ -58,10 +58,10 @@ class TelaInicial:
 
         # Carregar Logo
         caminhos_logo = [
-            path.join('graficos', 'logo.png'),
-            path.join('src', 'graficos', 'logo.png'),
-            path.join(path.dirname(__file__), 'graficos', 'logo.png'),
-            path.join(path.dirname(__file__), '..', 'graficos', 'logo.png'),
+            path.join('img', 'logo.png'),
+            path.join('src', 'img', 'logo.png'),
+            path.join(path.dirname(__file__), 'img', 'logo.png'),
+            path.join(path.dirname(__file__), '..', 'img', 'logo.png'),
         ]
         caminho_logo = next((p for p in caminhos_logo if path.exists(p)), None)
         self.logo = None
